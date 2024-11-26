@@ -1,6 +1,6 @@
 from typing import Type
 
-from django.db.models import QuerySet
+from django.db.models import Count, F, QuerySet
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
 
@@ -79,6 +79,13 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
 
         if self.action == "list":
+            queryset = queryset.annotate(
+                tickets_available=(
+                        F("cinema_hall__rows")
+                        * F("cinema_hall__seats_in_row")
+                        - Count("tickets")
+                )
+            )
             date = self.request.query_params.get("date")
             movie_id = self.request.query_params.get("movie")
 
