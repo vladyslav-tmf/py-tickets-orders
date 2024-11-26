@@ -44,7 +44,7 @@ class MovieViewSet(viewsets.ModelViewSet):
         return [int(str_id) for str_id in query_string.split(",")]
 
     def get_queryset(self) -> QuerySet[Movie]:
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().prefetch_related("genres", "actors")
 
         if self.action == "list":
             actors = self.request.query_params.get("actors")
@@ -61,7 +61,7 @@ class MovieViewSet(viewsets.ModelViewSet):
             if title:
                 queryset = queryset.filter(title__icontains=title)
 
-        return queryset
+        return queryset.distinct()
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "list":
@@ -76,7 +76,7 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = MovieSession.objects.all()
 
     def get_queryset(self) -> QuerySet[MovieSession]:
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related()
 
         if self.action == "list":
             queryset = queryset.annotate(
@@ -95,7 +95,7 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
             if movie_id:
                 queryset = queryset.filter(movie__id=movie_id)
 
-        return queryset
+        return queryset.distinct()
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "list":
@@ -111,7 +111,19 @@ class OrderViewSet(viewsets.ModelViewSet):
     pagination_class = OrderViewSetPagination
 
     def get_queryset(self) -> QuerySet[Order]:
-        return super().get_queryset().filter(user=self.request.user)
+        queryset = super().get_queryset().filter(user=self.request.user)
+
+        if self.action == "list":
+            queryset = queryset.prefetch_related(
+            "tickets__movie_session__movie",
+            "tickets__movie_session__cinema_hall"
+        )
+        elif self.action == "retrieve":
+            queryset = queryset.prefetch_related(
+                "tickets__movie_session"
+            )
+
+        return queryset
 
     def perform_create(self, serializer: OrderSerializer) -> None:
         serializer.save(user=self.request.user)
