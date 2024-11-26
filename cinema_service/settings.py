@@ -42,10 +42,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    #  3-rd apps:
     "rest_framework",
     "debug_toolbar",
+    #  user apps:
     "cinema",
-    "user",
+    "user"
 ]
 
 MIDDLEWARE = [
@@ -120,7 +122,7 @@ AUTH_USER_MODEL = "user.User"
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Kiev"
 
 USE_I18N = True
 
