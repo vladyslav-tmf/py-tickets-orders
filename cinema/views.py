@@ -3,7 +3,7 @@ from typing import Type
 from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
 
-from cinema.models import Actor, CinemaHall, Genre, Movie, MovieSession
+from cinema.models import Actor, CinemaHall, Genre, Movie, MovieSession, Order
 from cinema.serializers import (
     ActorSerializer,
     CinemaHallSerializer,
@@ -13,7 +13,8 @@ from cinema.serializers import (
     MovieSerializer,
     MovieSessionDetailSerializer,
     MovieSessionListSerializer,
-    MovieSessionSerializer
+    MovieSessionSerializer,
+    OrderSerializer
 )
 
 
@@ -54,3 +55,8 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
             return MovieSessionDetailSerializer
 
         return MovieSessionSerializer
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
