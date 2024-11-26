@@ -38,6 +38,30 @@ class CinemaHallViewSet(viewsets.ModelViewSet):
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all()
 
+    @staticmethod
+    def _params_to_int(query_string) -> list[int]:
+        return [int(str_id) for str_id in query_string.split(",")]
+
+    def get_queryset(self) -> QuerySet[Movie]:
+        queryset = super().get_queryset()
+
+        if self.action == "list":
+            actors = self.request.query_params.get("actors")
+            genres = self.request.query_params.get("genres")
+            title = self.request.query_params.get("title")
+
+            if actors:
+                actors_ids = self._params_to_int(actors)
+                queryset = queryset.filter(actors__id__in=actors_ids)
+
+            if genres:
+                queryset = queryset.filter(genres__name__icontains=genres)
+
+            if title:
+                queryset = queryset.filter(title__icontains=title)
+
+        return queryset
+
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "list":
             return MovieListSerializer
@@ -61,7 +85,6 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
-    serializer_class = OrderSerializer
 
     def get_queryset(self) -> QuerySet[Order]:
         return super().get_queryset().filter(user=self.request.user)
@@ -73,4 +96,4 @@ class OrderViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return OrderListSerializer
 
-        return super().get_serializer_class()
+        return OrderSerializer
