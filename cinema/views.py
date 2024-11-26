@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.serializers import BaseSerializer
 
 from cinema.models import Actor, CinemaHall, Genre, Movie, MovieSession, Order
+from cinema.pagination import OrderViewSetPagination
 from cinema.serializers import (
     ActorSerializer,
     CinemaHallSerializer,
@@ -85,6 +86,7 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
+    pagination_class = OrderViewSetPagination
 
     def get_queryset(self) -> QuerySet[Order]:
         return super().get_queryset().filter(user=self.request.user)
