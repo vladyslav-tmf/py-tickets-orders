@@ -121,6 +121,40 @@ class TicketSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = ["id", "row", "seat", "movie_session"]
 
+    def validate(self, attrs: dict) -> dict:
+        movie_session = attrs.get("movie_session")
+        row = attrs.get("row")
+        seat = attrs.get("seat")
+
+        if not (1 <= row <= movie_session.cinema_hall.rows):
+            raise serializers.ValidationError(
+                {
+                    "row": (
+                        "Row number must be in range: "
+                        f"(1, {movie_session.cinema_hall.rows})."
+                    )
+                }
+            )
+
+        if not (1 <= seat <= movie_session.cinema_hall.seats_in_row):
+            raise serializers.ValidationError(
+                {
+                    "seat": (
+                        "Seat number must be in range: "
+                        f"(1, {movie_session.cinema_hall.seats_in_row})."
+                    )
+                }
+            )
+
+        if Ticket.objects.filter(
+                movie_session=movie_session, row=row, seat=seat
+        ).exists():
+            raise serializers.ValidationError(
+                f"Seat {seat} in row {row} is already taken."
+            )
+
+        return attrs
+
 
 class TicketDetailSerializer(TicketSerializer):
     movie_session = MovieSessionSerializer()
